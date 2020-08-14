@@ -1,5 +1,7 @@
 import { Effect, Reducer } from 'umi';
 import { queryCurrent } from '@/services/user';
+import { fakeAccountLogin } from '@/services/login';
+import { Toast } from 'antd-mobile';
 
 interface CurrentUser {
   name?: string;
@@ -18,6 +20,7 @@ export interface UserModelType {
 
   effects: {
     fetchCurrent: Effect;
+    login: Effect;
   };
 
   reducers: {
@@ -33,9 +36,19 @@ const UserModel: UserModelType = {
   },
 
   effects: {
-    *fetchCurrent({ payload }, { call, put }) {
+    *fetchCurrent(_, { call, put }) {
       const response = yield call(queryCurrent);
       yield put({ type: 'saveCurrentUser', payload: response });
+    },
+
+    *login({ payload }, { call, put }) {
+      const response = yield call(fakeAccountLogin, payload);
+
+      if (response.status === 1) {
+        yield put({ type: 'saveCurrentUser', payload: response });
+      } else {
+        Toast.fail(response.msg || '系统开小差，请稍后再试~');
+      }
     },
   },
 
